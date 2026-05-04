@@ -8,6 +8,10 @@ const withPWA = withSerwist({
   disable: process.env.NODE_ENV === "development",
 });
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  // Empty turbopack config tells Next.js 16 to use Turbopack in dev
+  // without conflicting with serwist's webpack config (which is dev-disabled anyway)
+  turbopack: {},
+};
 
 export default withPWA(nextConfig);
