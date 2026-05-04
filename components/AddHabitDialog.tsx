@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { toast } from "sonner";
@@ -19,7 +19,7 @@ import { EmojiPickerInput } from "@/components/EmojiPickerInput";
 import { Plus } from "lucide-react";
 
 interface AddHabitDialogProps {
-  trigger?: React.ReactNode;
+  trigger?: React.ReactElement<{ onClick?: React.MouseEventHandler }>;
 }
 
 export function AddHabitDialog({ trigger }: AddHabitDialogProps) {
@@ -55,19 +55,19 @@ export function AddHabitDialog({ trigger }: AddHabitDialogProps) {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        {trigger ?? (
-          <Button size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Habit
-          </Button>
-        )}
-      </SheetTrigger>
+      {trigger ? (
+        React.cloneElement(trigger, { onClick: () => setOpen(true) })
+      ) : (
+        <SheetTrigger render={<Button size="sm" className="gap-2" />}>
+          <Plus className="h-4 w-4" />
+          Add Habit
+        </SheetTrigger>
+      )}
       <SheetContent side="bottom" className="rounded-t-2xl max-h-[90svh]">
         <SheetHeader className="text-left mb-6">
           <SheetTitle>New Habit</SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="px-4 pb-4 space-y-4">
           <div className="flex items-end gap-3">
             <div className="space-y-1.5">
               <Label>Icon</Label>

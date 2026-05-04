@@ -86,7 +86,7 @@ export function EditHabitDialog({
         <SheetHeader className="text-left mb-6">
           <SheetTitle>Edit Habit</SheetTitle>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="px-4 pb-4 space-y-4">
           <div className="flex items-end gap-3">
             <div className="space-y-1.5">
               <Label>Icon</Label>
