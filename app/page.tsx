@@ -51,33 +51,48 @@ export default function TodayPage() {
   const completedIds = new Set(completions?.map((c) => c.habitId) ?? []);
   const doneCount = habits?.filter((h) => completedIds.has(h._id)).length ?? 0;
   const totalCount = habits?.length ?? 0;
+  const pct = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
+  const allDone = totalCount > 0 && doneCount === totalCount;
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Today</h1>
-          <p className="text-sm text-muted-foreground">
+    <div className="max-w-lg mx-auto px-4 pt-8 space-y-7 [animation:fade-up_0.3s_ease_both]">
+
+      {/* Journal-style header */}
+      <div className="flex items-end justify-between">
+        <div className="space-y-0.5">
+          <p className="font-display italic text-xs tracking-[0.2em] uppercase text-muted-foreground">
             {formatDisplayDate(new Date())}
           </p>
+          <h1 className="text-[2rem] font-bold leading-none tracking-tight">
+            {allDone && totalCount > 0 ? "Done ✦" : "Today"}
+          </h1>
         </div>
         <AddHabitDialog />
       </div>
 
-      {/* Progress bar */}
+      {/* Amber progress bar */}
       {!loading && totalCount > 0 && (
-        <div className="space-y-1.5">
-          <div className="flex justify-between text-sm text-muted-foreground">
-            <span>
-              {doneCount} / {totalCount} completed
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground font-medium tracking-wide">
+              {doneCount} of {totalCount}
             </span>
-            <span>{Math.round((doneCount / totalCount) * 100)}%</span>
+            <span
+              className="text-xs font-bold tabular-nums transition-all duration-500"
+              style={{ color: pct > 0 ? "oklch(0.75 0.13 78)" : undefined }}
+            >
+              {Math.round(pct)}%
+            </span>
           </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div className="h-1 rounded-full bg-muted/60 overflow-hidden">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-500"
-              style={{ width: `${(doneCount / totalCount) * 100}%` }}
+              className="h-full rounded-full transition-all duration-700 ease-out"
+              style={{
+                width: `${pct}%`,
+                background:
+                  "linear-gradient(90deg, oklch(0.70 0.12 75), oklch(0.82 0.14 82))",
+                boxShadow: pct > 0 ? "0 0 10px 1px oklch(0.75 0.13 78 / 0.45)" : "none",
+              }}
             />
           </div>
         </div>
@@ -85,35 +100,46 @@ export default function TodayPage() {
 
       {/* Habit list */}
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-[72px] rounded-xl" />
+            <Skeleton
+              key={i}
+              className="h-[58px] rounded-lg"
+              style={{ animationDelay: `${i * 60}ms` }}
+            />
           ))}
         </div>
       ) : habits.length === 0 ? (
         <EmptyState
-          title="No habits yet"
-          description="Add your first habit to start building your streak."
+          title="Nothing here yet"
+          description="Add your first habit and start building a streak."
           action={
             <AddHabitDialog
               trigger={
-                <Button size="lg" className="mt-2">
-                  Add your first habit
+                <Button
+                  size="sm"
+                  className="mt-1 font-semibold tracking-wide"
+                >
+                  Add a habit
                 </Button>
               }
             />
           }
         />
       ) : (
-        <div className="space-y-3">
-          {habits.map((habit) => (
-            <HabitCardWithStreak
+        <div className="space-y-2">
+          {habits.map((habit, i) => (
+            <div
               key={habit._id}
-              habit={habit}
-              isCompleted={completedIds.has(habit._id)}
-              date={today}
-              onEdit={() => setEditingHabit(habit)}
-            />
+              style={{ animation: `fade-up 0.3s ease both`, animationDelay: `${i * 45}ms` }}
+            >
+              <HabitCardWithStreak
+                habit={habit}
+                isCompleted={completedIds.has(habit._id)}
+                date={today}
+                onEdit={() => setEditingHabit(habit)}
+              />
+            </div>
           ))}
         </div>
       )}
