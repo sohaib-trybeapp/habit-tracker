@@ -20,10 +20,14 @@ import { Plus } from "lucide-react";
 
 interface AddHabitDialogProps {
   trigger?: React.ReactElement<{ onClick?: React.MouseEventHandler }>;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AddHabitDialog({ trigger }: AddHabitDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddHabitDialog({ trigger, open: controlledOpen, onOpenChange }: AddHabitDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState("✨");
   const [description, setDescription] = useState("");

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { getTodayString, formatDisplayDate } from "@/lib/dates";
 import { HabitCard, type Habit } from "@/components/HabitCard";
-import { AddHabitDialog } from "@/components/AddHabitDialog";
 import { EditHabitDialog } from "@/components/EditHabitDialog";
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
@@ -16,11 +16,13 @@ function HabitCardWithStreak({
   isCompleted,
   date,
   onEdit,
+  isLast,
 }: {
   habit: Habit;
   isCompleted: boolean;
   date: string;
   onEdit: () => void;
+  isLast: boolean;
 }) {
   const streak = useQuery(api.habitLogs.getStreakForHabit, {
     habitId: habit._id,
@@ -28,13 +30,24 @@ function HabitCardWithStreak({
   const toggleToday = useMutation(api.habitLogs.toggleToday);
 
   return (
-    <HabitCard
-      habit={habit}
-      isCompleted={isCompleted}
-      streak={streak ?? 0}
-      onToggle={() => toggleToday({ habitId: habit._id, date })}
-      onEdit={onEdit}
-    />
+    <div className="relative">
+      <HabitCard
+        habit={habit}
+        isCompleted={isCompleted}
+        streak={streak ?? 0}
+        onToggle={() => toggleToday({ habitId: habit._id, date })}
+        onEdit={onEdit}
+      />
+      {!isLast && (
+        <div
+          className="absolute bottom-0 right-0 h-px"
+          style={{
+            left: "64px",
+            background: "var(--ios-separator)",
+          }}
+        />
+      )}
+    </div>
   );
 }
 
@@ -45,6 +58,7 @@ export default function TodayPage() {
     date: today,
   });
 
+  const router = useRouter();
   const [editingHabit, setEditingHabit] = useState<Habit | null>(null);
 
   const loading = habits === undefined || completions === undefined;
@@ -55,43 +69,47 @@ export default function TodayPage() {
   const allDone = totalCount > 0 && doneCount === totalCount;
 
   return (
-    <div className="max-w-lg mx-auto px-4 pt-8 space-y-7 [animation:fade-up_0.3s_ease_both]">
+    <div className="max-w-lg mx-auto pt-10 pb-4">
 
-      {/* Journal-style header */}
-      <div className="flex items-end justify-between">
-        <div className="space-y-0.5">
-          <p className="font-display italic text-xs tracking-[0.2em] uppercase text-muted-foreground">
-            {formatDisplayDate(new Date())}
-          </p>
-          <h1 className="text-[2rem] font-bold leading-none tracking-tight">
-            {allDone && totalCount > 0 ? "Done ✦" : "Today"}
-          </h1>
-        </div>
-        <AddHabitDialog />
+      {/* iOS large title header */}
+      <div className="px-4 mb-2">
+        <p
+          className="text-[13px] font-medium uppercase tracking-[0.06em] mb-0.5"
+          style={{ color: "var(--ios-tertiary-label)" }}
+        >
+          {formatDisplayDate(new Date())}
+        </p>
+        <h1 className="text-[34px] font-bold leading-none tracking-tight">
+          {allDone && totalCount > 0 ? "All Done" : "Today"}
+        </h1>
       </div>
 
-      {/* Amber progress bar */}
+      {/* Progress row */}
       {!loading && totalCount > 0 && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-muted-foreground font-medium tracking-wide">
-              {doneCount} of {totalCount}
+        <div className="px-4 mb-6 mt-3">
+          <div className="flex items-center justify-between mb-1.5">
+            <span
+              className="text-[13px] font-medium"
+              style={{ color: "var(--ios-tertiary-label)" }}
+            >
+              {doneCount} of {totalCount} completed
             </span>
             <span
-              className="text-xs font-bold tabular-nums transition-all duration-500"
-              style={{ color: pct > 0 ? "oklch(0.75 0.13 78)" : undefined }}
+              className="text-[13px] font-semibold tabular-nums transition-all duration-500"
+              style={{ color: pct > 0 ? "var(--primary)" : "var(--ios-tertiary-label)" }}
             >
               {Math.round(pct)}%
             </span>
           </div>
-          <div className="h-1 rounded-full bg-muted/60 overflow-hidden">
+          <div
+            className="h-[4px] rounded-full overflow-hidden"
+            style={{ background: "var(--ios-separator)" }}
+          >
             <div
               className="h-full rounded-full transition-all duration-700 ease-out"
               style={{
                 width: `${pct}%`,
-                background:
-                  "linear-gradient(90deg, oklch(0.70 0.12 75), oklch(0.82 0.14 82))",
-                boxShadow: pct > 0 ? "0 0 10px 1px oklch(0.75 0.13 78 / 0.45)" : "none",
+                background: "var(--primary)",
               }}
             />
           </div>
@@ -100,46 +118,35 @@ export default function TodayPage() {
 
       {/* Habit list */}
       {loading ? (
-        <div className="space-y-2.5">
+        <div className="px-4 space-y-0 rounded-[10px] overflow-hidden bg-card">
           {[1, 2, 3].map((i) => (
-            <Skeleton
-              key={i}
-              className="h-[58px] rounded-lg"
-              style={{ animationDelay: `${i * 60}ms` }}
-            />
+            <Skeleton key={i} className="h-[52px] rounded-none" />
           ))}
         </div>
       ) : habits.length === 0 ? (
         <EmptyState
-          title="Nothing here yet"
+          title="No habits yet"
           description="Add your first habit and start building a streak."
           action={
-            <AddHabitDialog
-              trigger={
-                <Button
-                  size="sm"
-                  className="mt-1 font-semibold tracking-wide"
-                >
-                  Add a habit
-                </Button>
-              }
-            />
+            <Button size="sm" className="mt-1" onClick={() => router.push("/habits?new=true")}>
+              Create habit
+            </Button>
           }
         />
       ) : (
-        <div className="space-y-2">
+        <div
+          className="mx-4 rounded-[10px] overflow-hidden"
+          style={{ background: "var(--card)" }}
+        >
           {habits.map((habit, i) => (
-            <div
+            <HabitCardWithStreak
               key={habit._id}
-              style={{ animation: `fade-up 0.3s ease both`, animationDelay: `${i * 45}ms` }}
-            >
-              <HabitCardWithStreak
-                habit={habit}
-                isCompleted={completedIds.has(habit._id)}
-                date={today}
-                onEdit={() => setEditingHabit(habit)}
-              />
-            </div>
+              habit={habit}
+              isCompleted={completedIds.has(habit._id)}
+              date={today}
+              onEdit={() => setEditingHabit(habit)}
+              isLast={i === habits.length - 1}
+            />
           ))}
         </div>
       )}

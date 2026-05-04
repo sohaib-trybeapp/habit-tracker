@@ -7,11 +7,10 @@ export function StreakBadge({ streak }: StreakBadgeProps) {
 
   return (
     <span
-      className="inline-flex items-center gap-0.5 text-xs font-semibold tabular-nums"
-      style={{ color: "oklch(0.75 0.13 78)" }}
+      className="inline-flex items-center gap-[3px] text-[12px] font-medium tabular-nums leading-none"
+      style={{ color: "var(--ios-tertiary-label)" }}
     >
-      <span className="text-[10px]">🔥</span>
-      <span>{streak}</span>
+      🔥 <span>{streak} day streak</span>
     </span>
   );
 }

@@ -2,12 +2,42 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CheckSquare, ListTodo } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// SF Symbols equivalents via Lucide — closest matches to iOS system icons
+const CheckmarkCircleIcon = ({ active }: { active: boolean }) => (
+  <svg viewBox="0 0 24 24" className="h-[26px] w-[26px]" fill="none">
+    <circle
+      cx="12" cy="12" r="10"
+      strokeWidth={active ? 0 : 1.6}
+      stroke={active ? "none" : "currentColor"}
+      fill={active ? "currentColor" : "none"}
+    />
+    {active && (
+      <path d="M7.5 12.5l3 3 5.5-6" stroke="white" strokeWidth="1.8"
+        strokeLinecap="round" strokeLinejoin="round" />
+    )}
+    {!active && (
+      <path d="M8 12.5l2.8 2.8 5.2-5.6" strokeWidth="1.6"
+        strokeLinecap="round" strokeLinejoin="round" stroke="currentColor" />
+    )}
+  </svg>
+);
+
+const ListIcon = ({ active }: { active: boolean }) => (
+  <svg viewBox="0 0 24 24" className="h-[26px] w-[26px]" fill="none">
+    <rect x="3" y="5" width="18" height="2.5" rx="1.25"
+      fill="currentColor" opacity={active ? 1 : 0.75} />
+    <rect x="3" y="10.75" width="18" height="2.5" rx="1.25"
+      fill="currentColor" opacity={active ? 1 : 0.75} />
+    <rect x="3" y="16.5" width="18" height="2.5" rx="1.25"
+      fill="currentColor" opacity={active ? 1 : 0.75} />
+  </svg>
+);
+
 const tabs = [
-  { href: "/", label: "Today", icon: CheckSquare },
-  { href: "/habits", label: "Habits", icon: ListTodo },
+  { href: "/",        label: "Today",  Icon: CheckmarkCircleIcon },
+  { href: "/habits",  label: "Habits", Icon: ListIcon },
 ];
 
 export function BottomNav() {
@@ -17,44 +47,34 @@ export function BottomNav() {
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 pb-safe"
       style={{
-        background:
-          "linear-gradient(to top, oklch(0.108 0.007 55) 60%, oklch(0.108 0.007 55 / 0) 100%)",
+        background: "var(--ios-tab-bg)",
+        backdropFilter: "blur(20px) saturate(180%)",
+        WebkitBackdropFilter: "blur(20px) saturate(180%)",
+        borderTop: "0.5px solid var(--ios-separator)",
       }}
     >
-      <div className="flex h-16 max-w-lg mx-auto">
-        {tabs.map(({ href, label, icon: Icon }) => {
+      <div className="flex h-[49px] max-w-lg mx-auto">
+        {tabs.map(({ href, label, Icon }) => {
           const active = pathname === href;
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                "flex-1 flex flex-col items-center justify-center gap-1 transition-all duration-200",
-                active
-                  ? "text-primary"
-                  : "text-muted-foreground/50 hover:text-muted-foreground"
+                "flex-1 flex flex-col items-center justify-center gap-[3px] transition-colors duration-150",
+                active ? "text-primary" : "text-[var(--ios-tertiary-label)]"
               )}
+              style={{
+                color: active ? undefined : "rgba(128,128,128,0.7)",
+              }}
             >
-              <Icon
-                className={cn(
-                  "h-[18px] w-[18px] transition-all duration-200",
-                  active ? "stroke-[2]" : "stroke-[1.5]"
-                )}
-              />
+              <Icon active={active} />
               <span
-                className={cn(
-                  "text-[10px] font-semibold uppercase tracking-widest transition-all duration-200",
-                  active ? "opacity-100" : "opacity-60"
-                )}
+                className="text-[10px] leading-none"
+                style={{ fontWeight: 500, letterSpacing: "0.01em" }}
               >
                 {label}
               </span>
-              {active && (
-                <span
-                  className="absolute bottom-[calc(64px+env(safe-area-inset-bottom)-2px)] h-0.5 w-8 rounded-full"
-                  style={{ background: "oklch(0.75 0.13 78)" }}
-                />
-              )}
             </Link>
           );
         })}

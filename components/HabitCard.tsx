@@ -2,8 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { StreakBadge } from "@/components/StreakBadge";
-import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import type { Id } from "@/convex/_generated/dataModel";
 
 export interface Habit {
@@ -32,95 +31,68 @@ export function HabitCard({
   onEdit,
 }: HabitCardProps) {
   return (
-    <div
-      className={cn(
-        "group relative flex items-center gap-4 px-4 py-3.5 rounded-lg cursor-pointer select-none",
-        "border transition-all duration-200",
-        "active:scale-[0.985]",
-        isCompleted
-          ? "bg-card border-l-2 border-l-primary border-t-border/50 border-r-border/50 border-b-border/50"
-          : "bg-card border-border hover:border-border/80 hover:bg-card/80"
-      )}
-      onClick={onToggle}
-      role="button"
-      aria-pressed={isCompleted}
-    >
-      {/* Ink-stamp completion circle */}
-      {/* key change forces remount → triggers stamp animation on check */}
-      <div
-        key={isCompleted ? "done" : "pending"}
-        className={cn(
-          "shrink-0 h-6 w-6 rounded-full border-2 flex items-center justify-center",
-          "transition-colors duration-300",
-          isCompleted
-            ? "bg-primary border-primary [animation:stamp-in_0.38s_cubic-bezier(0.34,1.56,0.64,1)_both]"
-            : "border-muted-foreground/35 bg-transparent"
-        )}
-        style={{ willChange: "transform" }}
+    <div className="relative flex items-center min-h-[52px]">
+      {/* Tap area for toggling — left + center */}
+      <button
+        className="flex items-center gap-3 flex-1 min-w-0 pl-4 py-3 text-left active:opacity-60 transition-opacity duration-75"
+        onClick={onToggle}
+        aria-pressed={isCompleted}
       >
-        {isCompleted && (
-          <svg
-            className="h-3.5 w-3.5 text-primary-foreground"
-            viewBox="0 0 14 14"
-            fill="none"
-          >
-            <path
-              d="M2.5 7L5.5 10L11.5 4"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </div>
-
-      {/* Emoji */}
-      <span
-        className={cn(
-          "text-xl shrink-0 transition-all duration-300",
-          isCompleted && "grayscale-[30%]"
-        )}
-      >
-        {habit.emoji}
-      </span>
-
-      {/* Name + streak */}
-      <div className="flex-1 min-w-0">
-        <p
-          className={cn(
-            "font-medium text-sm leading-snug truncate transition-all duration-300",
-            isCompleted
-              ? "text-muted-foreground line-through decoration-primary/60 decoration-1"
-              : "text-foreground"
-          )}
+        {/* iOS-style completion circle */}
+        {/* key flip forces remount → CSS animation fires on check */}
+        <div
+          key={isCompleted ? "on" : "off"}
+          className="shrink-0 h-[26px] w-[26px] rounded-full flex items-center justify-center transition-colors"
+          style={{
+            background: isCompleted ? "var(--ios-green)" : "transparent",
+            border: isCompleted ? "none" : "2px solid var(--ios-tertiary-label)",
+            animation: isCompleted
+              ? "ios-check-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both"
+              : "none",
+          }}
         >
-          {habit.name}
-        </p>
-        {streak > 0 && (
-          <div className="mt-0.5 [animation:fade-up_0.25s_ease_both]">
-            <StreakBadge streak={streak} />
-          </div>
-        )}
-      </div>
+          {isCompleted && (
+            <svg viewBox="0 0 14 14" className="h-3.5 w-3.5" fill="none">
+              <path
+                d="M2.5 7.5l3 3 6-6"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          )}
+        </div>
 
-      {/* Edit — stops card toggle */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className={cn(
-          "shrink-0 h-7 w-7 transition-all duration-200",
-          "text-muted-foreground/40 hover:text-muted-foreground",
-          "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
-        )}
-        onClick={(e) => {
-          e.stopPropagation();
-          onEdit();
-        }}
-        aria-label={`Edit ${habit.name}`}
-      >
-        <Pencil className="h-3.5 w-3.5" />
-      </Button>
+        {/* Emoji */}
+        <span className="text-xl shrink-0">{habit.emoji}</span>
+
+        {/* Name + streak */}
+        <div className="flex-1 min-w-0">
+          <p
+            className={cn(
+              "text-[17px] leading-snug truncate transition-colors duration-200",
+              isCompleted ? "text-muted-foreground line-through decoration-1" : "text-foreground"
+            )}
+          >
+            {habit.name}
+          </p>
+          {streak > 0 && (
+            <StreakBadge streak={streak} />
+          )}
+        </div>
+      </button>
+
+      {/* Edit chevron — right side */}
+      <div className="flex items-center">
+        <button
+          className="flex items-center pr-3 pl-2 py-3 text-muted-foreground/40 active:opacity-60 transition-opacity duration-75"
+          onClick={onEdit}
+          aria-label={`Edit ${habit.name}`}
+        >
+          <ChevronRight className="h-4 w-4 stroke-[1.5]" />
+        </button>
+      </div>
     </div>
   );
 }
